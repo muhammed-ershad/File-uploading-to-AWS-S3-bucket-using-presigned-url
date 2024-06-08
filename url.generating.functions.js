@@ -28,7 +28,7 @@ export const generatePresignedUrlForFileUpload = async (fileName) => {
     const url = await getSignedUrl(s3Client, command, {
       expiresIn: 300,
     }); 
-    console.log('filename', newFileName);
+    console.log(newFileName);
     console.log(url)
     return { url, newFileName };
   } catch (err) {
