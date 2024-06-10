@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image to S3</title>
+</head>
+<body>
+    <h1>Upload Image to S3</h1>
+    <form id="uploadForm" enctype="multipart/form-data" method="post">
+        <input type="file" name="image" id="image">
+        <button type="submit">Upload Image</button>
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('image');
+            const file = fileInput.files[0];
+
+            // Fetch presigned URL from server
+            const response = await fetch('http://localhost:4000/put-presigned-url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fileName: file.name })
+            });
+
+            if(!response.ok) alert('Error in generating url')
+            
+            const res = await response.json()
+            if(!res.success) alert('Error in generating url')
+
+            const url = res.data.url
+
+            // Upload file to S3 using presigned URL
+            const uploadResponse = await fetch(url, {
+                method: 'PUT',
+                body: file,
+                headers: {
+                    'Content-Type': file.type
+                }
+            });
+
+            if (uploadResponse.ok) {
+                document.getElementById('message').textContent = 'Image uploaded successfully!';
+            } else {
+                document.getElementById('message').textContent = 'Failed to upload image.';
+            }
+        });
+    </script>
+</body>
+</html>
